@@ -47,11 +47,15 @@
   ],
   "readOnlyChainChecks": {
     "accountOwner": "0x69fA5c7e0f9f5F50fe2E62eC26b305B421Fa8caa",
+    "taskId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "reviewSnapshotDigest": "0x0000000000000000000000000000000000000000000000000000000000000002",
+    "mandateHash": "0x3577f163398d8ee2763a5fd25d4a55e567d6db0a08cf03c2c834c73b491e5d65",
     "accountExecutor": "0x054883337cA2b9a3DC401eCe980A5F7030cb9366",
     "accountRecipient": "0x183f66622995afD7E16479E48A98b6241858E1ea",
     "fulfillmentReporter": "0x183f66622995afD7E16479E48A98b6241858E1ea",
     "accountToken": "0x84B494ff145a545D286321691a9B4Febe6947D6A",
     "maxSpendBaseUnits": "60000000",
+    "expiresAtUnix": 2000000000,
     "deployerMockUSDCBalanceBaseUnits": "100000000",
     "accountMockUSDCBalanceBaseUnits": "0",
     "accountActive": true,
@@ -95,7 +99,7 @@
     "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
     "The task account is deployed from feature/sepolia-task-account commit 22838429243e3cc2e31974f68bc704c1feffe69c; that source commit was later merged to main by PR #3.",
     "The owner has not funded the task account. The executor and fulfillment reporter have Sepolia ETH, but no payment or fulfillment transaction has been submitted.",
-    "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
+    "The task ID and review snapshot digest are demo configuration values, not identifiers/digests issued from a persisted server mandate or verified user approval.",
     "The no-broadcast probes are direct contract eth_call simulations, not authenticated backend policy or executor integration tests."
   ]
 }

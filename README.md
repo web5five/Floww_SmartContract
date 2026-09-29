@@ -43,6 +43,20 @@ forge script script/DeploySepoliaDemo.s.sol:DeploySepoliaDemo \
 
 The script deploys a new faucet-enabled `MockUSDC`, mints the configured test amount to the deployer, then deploys the task account from that same owner address. `FLOWW_REVIEW_SNAPSHOT_DIGEST` must identify the exact server-side reviewed snapshot; the account derives its on-chain mandate hash from that reference and the deployed terms. Record the token/account addresses and deployment transaction from Foundry output. The owner must separately approve and call `fund`; the executor must call `executePayment(paymentId, amount)`; the configured reporter must call `confirmFulfillment(paymentId, evidenceHash)` only after the simulated merchant has fulfilled the order. Read `paymentExecuted`, `fulfillmentConfirmed`, `paymentId`, and emitted events independently from the chain before reporting a result.
 
+## Executor integration handoff
+
+The only payment entry point is `executePayment(bytes32 paymentId, uint256 amount)`. It has **no recipient or token argument**: both are immutable account terms. The call must be sent from the exact `executor()` address, on Sepolia, with amount in the token's integer base units. The contract enforces active/unexpired authority, sufficient account balance, the maximum amount, and one payment per account.
+
+Before any signature or broadcast, the integrating backend must load the authenticated owner and persisted, user-approved mandate; verify its task ID, immutable review digest and derived `mandateHash`; compare chain ID, token, fixed recipient, executor, maximum, expiry and account address; match the selected quote's recipient/token; validate the exact amount and available account balance; and require `isActive() == true` and `paymentExecuted() == false`. A different selected pharmacy cannot be passed to this account; policy must deny it and request a newly approved mandate/account.
+
+Create and persist a nonzero stable `paymentId` bound to the task/execution/quote before sending. The contract's `paymentExecuted` one-shot state is the on-chain replay guard; `paymentId` is an evidence correlation value, not a separate nonce. Simulate the same calldata with `eth_call` from `executor()` as a preflight, then submit only after ALLOW. A simulation is not a reservation and cannot guarantee the later transaction will succeed.
+
+The signer must be available to the component that broadcasts. A MetaMask executor EOA can submit `eth_sendTransaction` from the wallet, but the user must approve that transaction in MetaMask. The backend cannot broadcast as that EOA from its JWT alone. Autonomous server submission requires a separately controlled executor signer and an explicitly reviewed key-management boundary; never copy a user's MetaMask private key to the server.
+
+Treat a payment as successful only after a mined receipt has `status == 1` and the expected `PaymentExecuted` event matches task ID, mandate hash, payment ID, token, configured recipient and amount. Persist chain ID, transaction hash, block number, transaction index and decoded event with the execution. On timeout or unknown send outcome, reconcile the transaction/receipt and executor nonce before considering a retry; do not blindly submit a second payment. Fulfillment is a separate state and requires its own verified source.
+
+This handoff describes the contract integration boundary; no Java payment adapter or authenticated payment API is implemented yet. The current demo account's Task ID and review digest are test configuration values, not a persisted server mandate or proof of user approval.
+
 ## Recorded Sepolia deployment
 
 The 2026-09-29 demo deployment has independently checked transaction receipts and read-only contract state in [the deployment evidence record](evidence/sepolia-2026-09-29.json). It deployed only the faucet-enabled `fUSDC` fixture and a task account; no payment or fulfillment was executed.
