@@ -1,64 +1,98 @@
 {
   "schemaVersion": 1,
-  "status": "verified_deployment_only",
-  "observedAt": "2026-09-29",
+  "status": "verified_eip712_approval_and_funding",
+  "observedAt": "2026-09-30",
   "network": {
     "name": "Ethereum Sepolia",
     "chainId": 11155111
   },
   "source": {
     "repository": "Floww_SmartContract",
-    "branch": "feature/sepolia-task-account",
-    "commit": "22838429243e3cc2e31974f68bc704c1feffe69c"
+    "branch": "feature/eip712-task-approval",
+    "baseCommit": "6cf4a10ac795809867cb4b549f52e80772f8d77b",
+    "sourceDiffSha256": "107dc817f4b40659999d1a71de5c99fbbe775b232f3caf0d93067b22c90f1337",
+    "workingTreeWasUncommittedAtDeployment": true,
+    "sourceFiles": [
+      "src/FlowwTaskAccount.sol",
+      "script/DeploySepoliaDemo.s.sol",
+      "test/FlowwTaskAccount.t.sol"
+    ]
   },
   "contracts": {
     "mockUSDC": {
-      "address": "0x84B494ff145a545D286321691a9B4Febe6947D6A",
+      "address": "0x1390c8745Eb49069afD3b89393997e3FA14614f5",
       "symbol": "fUSDC",
       "decimals": 6,
-      "deploymentTransaction": "0x0cdbb47413e781fdc5d766cda985953282a6ae14ed03bb936d73db1cc63e48be",
-      "deploymentBlock": 11808003
+      "deploymentTransaction": "0x3684d16d8fbb8d9cc67e38b6b3a82fa420470a65753265c1dc62a4b71f7d708c",
+      "deploymentBlock": 11808623
     },
     "flowwTaskAccount": {
-      "address": "0xBf3262A36C33ebFdc739caCc14727CD7377Ce79b",
-      "deploymentTransaction": "0x36d338ff842b7f2f753e8f8d7506efa64e299cea9003ccc24caa8f0bebfd0a5f",
-      "deploymentBlock": 11808005
+      "address": "0x95c49D0e03f529557Fe36Fc9C5616d392d11640D",
+      "deploymentTransaction": "0x650999d677232bce27c4447a3ee09b4656fce0df1cea820d14183cad9816336d",
+      "deploymentBlock": 11808625
     }
   },
   "transactions": [
     {
       "purpose": "deploy_mock_usdc_fixture",
-      "hash": "0x0cdbb47413e781fdc5d766cda985953282a6ae14ed03bb936d73db1cc63e48be",
+      "hash": "0x3684d16d8fbb8d9cc67e38b6b3a82fa420470a65753265c1dc62a4b71f7d708c",
       "status": "0x1",
-      "blockNumber": 11808003
+      "blockNumber": 11808623
     },
     {
       "purpose": "mint_test_tokens_to_deployer",
-      "hash": "0xb762d5b91a55a644c2711d62a7228975b1783ebecf4f228d972b2283ce3c1dea",
+      "hash": "0x7f678bd9c9dcd7abae2b4e4380d59b1f68d15cccca829c82696ad2a080f40c11",
       "status": "0x1",
-      "blockNumber": 11808004
+      "blockNumber": 11808624
     },
     {
       "purpose": "deploy_floww_task_account",
-      "hash": "0x36d338ff842b7f2f753e8f8d7506efa64e299cea9003ccc24caa8f0bebfd0a5f",
+      "hash": "0x650999d677232bce27c4447a3ee09b4656fce0df1cea820d14183cad9816336d",
       "status": "0x1",
-      "blockNumber": 11808005
+      "blockNumber": 11808625
+    },
+    {
+      "purpose": "approve_eip712_mandate",
+      "hash": "0x5e10eee3f252db3145d72b59512122b21d21491cb88ad09677c954c1cd8b7774",
+      "status": "0x1",
+      "blockNumber": 11808627
+    },
+    {
+      "purpose": "approve_fusdc_spending",
+      "hash": "0xc5f8b0efcc086eb6edf81d5aa139f64b6196675cbf6d91565e9ed4503aaed40",
+      "status": "0x1",
+      "blockNumber": 11808628
+    },
+    {
+      "purpose": "fund_task_account_60_fusdc",
+      "hash": "0x0b42726e898001bff0f181829c90115cee898cdcd8296ceb1b95d75da3b71c41",
+      "status": "0x1",
+      "blockNumber": 11808630
     }
   ],
   "readOnlyChainChecks": {
     "accountOwner": "0x69fA5c7e0f9f5F50fe2E62eC26b305B421Fa8caa",
+    "taskId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "reviewSnapshotDigest": "0x0000000000000000000000000000000000000000000000000000000000000002",
+    "mandateHash": "0x9b2c4601c7179b95333f7f6afbda24a29df038097c35f63d4dafcc01eab94552",
     "accountExecutor": "0x054883337cA2b9a3DC401eCe980A5F7030cb9366",
     "accountRecipient": "0x183f66622995afD7E16479E48A98b6241858E1ea",
     "fulfillmentReporter": "0x183f66622995afD7E16479E48A98b6241858E1ea",
-    "accountToken": "0x84B494ff145a545D286321691a9B4Febe6947D6A",
+    "accountToken": "0x1390c8745Eb49069afD3b89393997e3FA14614f5",
     "maxSpendBaseUnits": "60000000",
-    "deployerMockUSDCBalanceBaseUnits": "100000000",
-    "accountMockUSDCBalanceBaseUnits": "0",
+    "expiresAtUnix": 2000000000,
+    "mandateApproved": true,
+    "approvedDigest": "0xd8058516da71568378ef1a32d4022d07ad41d50474c4e0897ce9ffbe866824f5",
+    "authorizationNonce": 1,
+    "deployerMockUSDCBalanceBaseUnits": "40000000",
+    "accountMockUSDCBalanceBaseUnits": "60000000",
+    "ownerTokenAllowanceBaseUnits": "0",
     "accountActive": true,
     "paymentExecuted": false,
     "fulfillmentConfirmed": false
   },
-  "noBroadcastSimulationProbes": {
+  "supersededAccountNoBroadcastSimulationProbes": {
+    "account": "0xBf3262A36C33ebFdc739caCc14727CD7377Ce79b",
     "method": "eth_call",
     "transactionSubmitted": false,
     "results": [
@@ -89,13 +123,16 @@
     "mockUSDC": "0xcaAB919586c44B392e246f8239B064Cd8db3C5d5",
     "reason": "Replaced because executor, recipient, and fulfillment reporter were placeholder addresses."
   },
+  "supersededControlledSignerDeployment": {
+    "flowwTaskAccount": "0xBf3262A36C33ebFdc739caCc14727CD7377Ce79b",
+    "mockUSDC": "0x84B494ff145a545D286321691a9B4Febe6947D6A",
+    "reason": "Replaced by the EIP-712-enabled deployment and funded with owner approval."
+  },
   "limitations": [
     "fUSDC is a faucet-enabled demo token with no real value; it is not Circle USDC.",
-    "This record proves deployment and queried contract state only; no payment or fulfillment was executed.",
-    "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
-    "The task account is deployed from feature/sepolia-task-account commit 22838429243e3cc2e31974f68bc704c1feffe69c; that source commit was later merged to main by PR #3.",
-    "The owner has not funded the task account. The executor and fulfillment reporter have Sepolia ETH, but no payment or fulfillment transaction has been submitted.",
-    "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
-    "The no-broadcast probes are direct contract eth_call simulations, not authenticated backend policy or executor integration tests."
+    "The current Task Account has an on-chain EIP-712 approval and holds 60 fUSDC; no payment or fulfillment has been executed.",
+    "The task ID and review snapshot digest are demo configuration values, not values issued from a persisted server mandate or verified against an approved backend record.",
+    "The deployed source was the uncommitted feature/eip712-task-approval working tree based on 6cf4a10ac795809867cb4b549f52e80772f8d77b; sourceDiffSha256 fingerprints the deployed source/script/test diff.",
+    "The recorded no-broadcast probes belong to the superseded non-EIP-712 account and are direct eth_call simulations, not authenticated backend policy tests."
   ]
 }

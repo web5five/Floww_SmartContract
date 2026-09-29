@@ -9,6 +9,8 @@ contract FlowwTaskAccountTest is Test {
     uint256 private constant USDC = 1e6;
     uint256 private constant MAX_SPEND = 60 * USDC;
     uint64 private constant EXPIRY = 2_000_000_000;
+    uint256 private constant OWNER_PRIVATE_KEY = 0xA11CE;
+    uint256 private constant STRANGER_PRIVATE_KEY = 0xB0B;
 
     address private owner;
     address private executor;
@@ -23,11 +25,11 @@ contract FlowwTaskAccountTest is Test {
 
     function setUp() public {
         vm.chainId(11155111);
-        owner = makeAddr("owner");
+        owner = vm.addr(OWNER_PRIVATE_KEY);
         executor = makeAddr("executor");
         recipient = makeAddr("merchant");
         reporter = makeAddr("merchant-reporter");
-        stranger = makeAddr("stranger");
+        stranger = vm.addr(STRANGER_PRIVATE_KEY);
 
         token = new MockUSDC();
         token.faucet(owner, 1_000 * USDC);
@@ -35,6 +37,7 @@ contract FlowwTaskAccountTest is Test {
     }
 
     function testOwnerFundsAndExecutorMakesOneBoundedPayment() public {
+        _approve();
         _fund(MAX_SPEND);
         bytes32 id = keccak256("payment-1");
         uint256 amount = 43 * USDC;
@@ -57,6 +60,7 @@ contract FlowwTaskAccountTest is Test {
     }
 
     function testPaymentCannotBeRepeated() public {
+        _approve();
         _fund(MAX_SPEND);
         vm.prank(executor);
         account.executePayment(keccak256("payment-1"), 1 * USDC);
@@ -67,6 +71,7 @@ contract FlowwTaskAccountTest is Test {
     }
 
     function testOutOfBudgetPaymentIsDeniedWithoutTransfer() public {
+        _approve();
         _fund(MAX_SPEND);
 
         vm.expectRevert(FlowwTaskAccount.InvalidPayment.selector);
@@ -78,6 +83,7 @@ contract FlowwTaskAccountTest is Test {
     }
 
     function testOnlyConfiguredExecutorCanPay() public {
+        _approve();
         _fund(MAX_SPEND);
 
         vm.expectRevert(FlowwTaskAccount.Unauthorized.selector);
@@ -88,12 +94,14 @@ contract FlowwTaskAccountTest is Test {
     }
 
     function testInsufficientFundingIsDenied() public {
+        _approve();
         vm.expectRevert(abi.encodeWithSelector(FlowwTaskAccount.InsufficientAccountBalance.selector, USDC, 0));
         vm.prank(executor);
         account.executePayment(keccak256("payment-1"), USDC);
     }
 
     function testOwnerCanRevokeAndRecoverFunds() public {
+        _approve();
         _fund(MAX_SPEND);
 
         vm.prank(owner);
@@ -107,6 +115,7 @@ contract FlowwTaskAccountTest is Test {
     }
 
     function testCannotRefundWhileAuthorityIsActive() public {
+        _approve();
         _fund(MAX_SPEND);
 
         vm.expectRevert(FlowwTaskAccount.AuthorityStillActive.selector);
@@ -115,6 +124,7 @@ contract FlowwTaskAccountTest is Test {
     }
 
     function testExpiryBlocksExecutionAndAllowsRefund() public {
+        _approve();
         _fund(MAX_SPEND);
         vm.warp(EXPIRY);
         assertFalse(account.isActive());
@@ -135,6 +145,7 @@ contract FlowwTaskAccountTest is Test {
         vm.prank(reporter);
         account.confirmFulfillment(id, evidence);
 
+        _approve();
         _fund(MAX_SPEND);
         vm.prank(executor);
         account.executePayment(id, 43 * USDC);
@@ -166,11 +177,88 @@ contract FlowwTaskAccountTest is Test {
         new FlowwTaskAccount(owner, _mandate());
     }
 
+    function testEip712OwnerApprovalCanBeRelayedAndConsumesNonce() public {
+        bytes32 approvalDigest = account.mandateApprovalDigest();
+
+        vm.prank(stranger);
+        account.approveMandate(_signature(OWNER_PRIVATE_KEY));
+
+        assertTrue(account.mandateApproved());
+        assertTrue(account.isActive());
+        assertEq(account.authorizationNonce(), 1);
+        assertEq(account.approvedDigest(), approvalDigest);
+        assertTrue(approvalDigest != account.mandateApprovalDigest());
+
+        bytes memory replaySignature = _signature(OWNER_PRIVATE_KEY);
+        vm.expectRevert(FlowwTaskAccount.MandateAlreadyApproved.selector);
+        vm.prank(stranger);
+        account.approveMandate(replaySignature);
+    }
+
+    function testWrongSignerCannotApproveMandate() public {
+        bytes memory signature = _signature(STRANGER_PRIVATE_KEY);
+        vm.expectRevert(FlowwTaskAccount.InvalidApprovalSignature.selector);
+        account.approveMandate(signature);
+
+        assertFalse(account.mandateApproved());
+        assertEq(account.authorizationNonce(), 0);
+    }
+
+    function testApprovalSignatureCannotBeReplayedOnAnotherAccount() public {
+        bytes memory signature = _signature(OWNER_PRIVATE_KEY);
+        FlowwTaskAccount secondAccount = _deploy(owner, _mandate());
+
+        vm.expectRevert(FlowwTaskAccount.InvalidApprovalSignature.selector);
+        secondAccount.approveMandate(signature);
+    }
+
+    function testApprovalSignatureCannotBeReplayedOnAnotherChain() public {
+        bytes memory signature = _signature(OWNER_PRIVATE_KEY);
+        vm.chainId(1);
+
+        vm.expectRevert(abi.encodeWithSelector(FlowwTaskAccount.UnsupportedChain.selector, 1));
+        account.approveMandate(signature);
+    }
+
+    function testExpiredOrRevokedMandateCannotBeApproved() public {
+        bytes memory signature = _signature(OWNER_PRIVATE_KEY);
+        vm.prank(owner);
+        account.revoke();
+
+        vm.expectRevert(FlowwTaskAccount.AuthorityInactive.selector);
+        account.approveMandate(signature);
+
+        FlowwTaskAccount expiringAccount = _deploy(owner, _mandate());
+        vm.warp(EXPIRY);
+        vm.expectRevert(FlowwTaskAccount.AuthorityInactive.selector);
+        expiringAccount.approveMandate(signature);
+    }
+
+    function testFundingAndPaymentRequireMandateApproval() public {
+        vm.expectRevert(FlowwTaskAccount.MandateNotApproved.selector);
+        vm.prank(owner);
+        account.fund(USDC);
+
+        vm.expectRevert(FlowwTaskAccount.MandateNotApproved.selector);
+        vm.prank(executor);
+        account.executePayment(keccak256("payment-before-approval"), USDC);
+    }
+
     function _fund(uint256 amount) private {
         vm.startPrank(owner);
         token.approve(address(account), amount);
         account.fund(amount);
         vm.stopPrank();
+    }
+
+    function _approve() private {
+        vm.prank(stranger);
+        account.approveMandate(_signature(OWNER_PRIVATE_KEY));
+    }
+
+    function _signature(uint256 privateKey) private view returns (bytes memory) {
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privateKey, account.mandateApprovalDigest());
+        return abi.encodePacked(r, s, v);
     }
 
     function _deploy(address accountOwner, FlowwTaskAccount.Mandate memory terms)

@@ -29,6 +29,13 @@ contract DeploySepoliaDemo is Script {
         mockToken.faucet(owner, vm.envUint("FLOWW_TEST_MINT_BASE_UNITS"));
         mandate.token = address(mockToken);
         FlowwTaskAccount account = new FlowwTaskAccount(owner, mandate);
+
+        bytes32 approvalDigest = account.mandateApprovalDigest();
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(ownerPrivateKey, approvalDigest);
+        account.approveMandate(abi.encodePacked(r, s, v));
+
+        mockToken.approve(address(account), mandate.maxSpend);
+        account.fund(mandate.maxSpend);
         vm.stopBroadcast();
 
         require(address(mockToken) != address(0) && address(account) != address(0), "Deployment failed");
