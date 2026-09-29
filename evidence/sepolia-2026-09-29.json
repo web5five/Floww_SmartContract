@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "status": "verified_deployment_only",
+  "observedAt": "2026-09-29",
+  "network": {
+    "name": "Ethereum Sepolia",
+    "chainId": 11155111
+  },
+  "source": {
+    "repository": "Floww_SmartContract",
+    "branch": "feature/sepolia-task-account",
+    "commit": "22838429243e3cc2e31974f68bc704c1feffe69c"
+  },
+  "contracts": {
+    "mockUSDC": {
+      "address": "0xcaAB919586c44B392e246f8239B064Cd8db3C5d5",
+      "symbol": "fUSDC",
+      "decimals": 6,
+      "deploymentTransaction": "0xb9eff02ca91fe560f5cdecf79ddad26640c616d2ed39f1d67862927c742455e3",
+      "deploymentBlock": 11807455
+    },
+    "flowwTaskAccount": {
+      "address": "0x4226435b8B0839DA33584f38c576526830404665",
+      "deploymentTransaction": "0x7b849878835032d9767ea79eb42f451cdf5624b2242bbe49df49eccc2281e9e5",
+      "deploymentBlock": 11807458
+    }
+  },
+  "transactions": [
+    {
+      "purpose": "deploy_mock_usdc_fixture",
+      "hash": "0xb9eff02ca91fe560f5cdecf79ddad26640c616d2ed39f1d67862927c742455e3",
+      "status": "0x1",
+      "blockNumber": 11807455
+    },
+    {
+      "purpose": "mint_test_tokens_to_deployer",
+      "hash": "0x669407a4d78c9c2a50f0997215c197e5867eb8d63d8ee66bf73107abfccc223b",
+      "status": "0x1",
+      "blockNumber": 11807456
+    },
+    {
+      "purpose": "deploy_floww_task_account",
+      "hash": "0x7b849878835032d9767ea79eb42f451cdf5624b2242bbe49df49eccc2281e9e5",
+      "status": "0x1",
+      "blockNumber": 11807458
+    }
+  ],
+  "readOnlyChainChecks": {
+    "accountOwner": "0x69fA5c7e0f9f5F50fe2E62eC26b305B421Fa8caa",
+    "accountToken": "0xcaAB919586c44B392e246f8239B064Cd8db3C5d5",
+    "maxSpendBaseUnits": "60000000",
+    "deployerMockUSDCBalanceBaseUnits": "100000000",
+    "accountActive": true,
+    "paymentExecuted": false,
+    "fulfillmentConfirmed": false
+  },
+  "limitations": [
+    "fUSDC is a faucet-enabled demo token with no real value; it is not Circle USDC.",
+    "This record proves deployment and queried contract state only; no payment or fulfillment was executed.",
+    "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
+    "The task account is deployed from feature/sepolia-task-account commit 22838429243e3cc2e31974f68bc704c1feffe69c; that source commit was later merged to main by PR #3."
+  ]
+}

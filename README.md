@@ -43,4 +43,8 @@ forge script script/DeploySepoliaDemo.s.sol:DeploySepoliaDemo \
 
 The script deploys a new faucet-enabled `MockUSDC`, mints the configured test amount to the deployer, then deploys the task account from that same owner address. `FLOWW_REVIEW_SNAPSHOT_DIGEST` must identify the exact server-side reviewed snapshot; the account derives its on-chain mandate hash from that reference and the deployed terms. Record the token/account addresses and deployment transaction from Foundry output. The owner must separately approve and call `fund`; the executor must call `executePayment(paymentId, amount)`; the configured reporter must call `confirmFulfillment(paymentId, evidenceHash)` only after the simulated merchant has fulfilled the order. Read `paymentExecuted`, `fulfillmentConfirmed`, `paymentId`, and emitted events independently from the chain before reporting a result.
 
-No contract is deployed by this repository change. The backend's F010/F012 routes, production authentication, mandate-hash generation, wallet UI, executor key management, merchant fixture and end-to-end evidence linkage still require integration. Do not use this contract with real funds.
+## Recorded Sepolia deployment
+
+The 2026-09-29 demo deployment has independently checked transaction receipts and read-only contract state in [the deployment evidence record](evidence/sepolia-2026-09-29.json). It deployed only the faucet-enabled `fUSDC` fixture and a task account; no payment or fulfillment was executed.
+
+The repository does not deploy contracts automatically; the separately executed demo deployment is recorded above. The backend's F010/F012 routes, production authentication, mandate-hash generation, wallet UI, executor key management, merchant fixture and end-to-end evidence linkage still require integration. Do not use this contract with real funds.
