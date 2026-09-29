@@ -1,23 +1,46 @@
-# Floww Contracts
+# Floww Task Smart Account
 
-Wallet/chain enforcement if a contract is adopted. A task-wallet design does not automatically require a custom contract.
+Sepolia-only task wallet for a single bounded ERC-20 payment. The owner deploys the account directly, fixing the token, recipient, executor, fulfillment reporter, maximum spend and expiry in immutable contract state. The contract derives the mandate hash from the Sepolia chain ID, owner, task ID, review snapshot digest and every immutable execution term. The configured executor can pay the fixed recipient once; the owner can revoke before payment and recover remaining tokens after revocation, payment or expiry.
 
-계약을 채택할 경우 온체인 집행을 담당합니다. task wallet 방식이 자동으로 커스텀 계약을 요구하지 않습니다.
+This is a task-scoped contract wallet, not an ERC-4337 account, a general-purpose wallet, a production USDC deployment or a claim that the existing Floww server/frontend are integrated. The user must review the exact terms in a trusted UI before signing the account deployment. Deployment by the owner is the on-chain approval boundary in this slice.
 
-[Integration hub](https://github.com/web5five/Floww) · [Server integration issue](https://github.com/web5five/Floww_Server/issues/1)
+## Trust and evidence boundaries
 
-## Current state / 현재 상태
+- The contract rejects chains other than Ethereum Sepolia (`11155111`). Token amounts are integer base units; the included test token uses 6 decimals.
+- `MockUSDC` is a faucet-enabled test fixture deployed by the demo script. It has no real value and must never be presented as Circle USDC. Verify any separately configured test token address from a trusted source.
+- Sepolia ETH pays deployment, approval, funding and execution gas. This demo does not sponsor gas.
+- The recipient and executor cannot be changed after deployment. A payment event proves the ERC-20 transfer succeeded on-chain, not that an order was accepted or delivered.
+- Only the immutable fulfillment reporter can attach a nonzero evidence hash to the matching payment. That hash is an audit reference, not cryptographic proof of delivery; the reporter and evidence-verification process remain trust assumptions.
+- The account permits one payment only. A payment or owner revocation ends spending authority; expiry blocks execution even before a cleanup transaction.
+- The contract does not hold or expose a user's main private key. Each task account is funded separately by its owner.
 
-This repository contains shared agent instructions and issue/PR templates. Application source, dependency lock/build wrapper, Docker runtime and application CI are not yet implemented here. This foundation is not a working component.
+## Build and test
 
-현재 에이전트 지침과 이슈/PR 템플릿을 준비했습니다. 앱 소스·의존성 잠금/빌드 래퍼·Docker 실행·앱 CI는 아직 구현하지 않았습니다.
+Install Foundry, then install the pinned Solidity dependencies:
 
-## Start a component task / 작업 착수
+```sh
+forge install OpenZeppelin/openzeppelin-contracts@v5.4.0
+forge install foundry-rs/forge-std@v1.9.7
+forge test -vvv
+forge fmt --check
+```
 
-1. Read `AGENTS.md` and the latest shared architecture/API contract.
-2. Fetch remote refs; preserve teammate work. Open a bounded issue and feature branch.
-3. Pin the runtime, dependencies and reproducible installation; add placeholder-only env examples.
-4. Add a real build/test job and verify startup/health in the intended environment.
-5. Link actual results in a PR and a bilingual Confluence handoff.
+The tests run locally on Anvil's EVM with the chain ID set to Sepolia. They cover authorization, one-time payment, amount limits, expiry, revocation, refunds, and separate fulfillment reporting. They do not constitute a Sepolia deployment or live transaction proof.
 
-Redis, pgvector, Kafka, Eureka and Config Server are deferred baseline services. Do not add dependencies simply to populate an empty repository. Keep secrets and private team sources out of Git.
+## Sepolia demo deployment
+
+Use a fresh test-only deployer key. Fund the deployer and the executor with faucet Sepolia ETH. Keep `.env` and all private keys out of Git; `.env.example` contains placeholders only.
+
+```sh
+cp .env.example .env
+# Replace every placeholder in .env, including a future expiry timestamp.
+set -a
+source .env
+set +a
+forge script script/DeploySepoliaDemo.s.sol:DeploySepoliaDemo \
+	--rpc-url "$SEPOLIA_RPC_URL" --broadcast
+```
+
+The script deploys a new faucet-enabled `MockUSDC`, mints the configured test amount to the deployer, then deploys the task account from that same owner address. `FLOWW_REVIEW_SNAPSHOT_DIGEST` must identify the exact server-side reviewed snapshot; the account derives its on-chain mandate hash from that reference and the deployed terms. Record the token/account addresses and deployment transaction from Foundry output. The owner must separately approve and call `fund`; the executor must call `executePayment(paymentId, amount)`; the configured reporter must call `confirmFulfillment(paymentId, evidenceHash)` only after the simulated merchant has fulfilled the order. Read `paymentExecuted`, `fulfillmentConfirmed`, `paymentId`, and emitted events independently from the chain before reporting a result.
+
+No contract is deployed by this repository change. The backend's F010/F012 routes, production authentication, mandate-hash generation, wallet UI, executor key management, merchant fixture and end-to-end evidence linkage still require integration. Do not use this contract with real funds.
