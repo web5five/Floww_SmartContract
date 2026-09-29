@@ -58,6 +58,32 @@
     "paymentExecuted": false,
     "fulfillmentConfirmed": false
   },
+  "noBroadcastSimulationProbes": {
+    "method": "eth_call",
+    "transactionSubmitted": false,
+    "results": [
+      {
+        "case": "over_budget",
+        "from": "0x054883337cA2b9a3DC401eCe980A5F7030cb9366",
+        "amountBaseUnits": "60000001",
+        "revert": "InvalidPayment()",
+        "selector": "0x3c6b4b28"
+      },
+      {
+        "case": "unauthorized_executor",
+        "from": "0x1111111111111111111111111111111111111111",
+        "amountBaseUnits": "1000000",
+        "revert": "Unauthorized()",
+        "selector": "0x82b42900"
+      }
+    ],
+    "recipientBinding": {
+      "executeMethod": "executePayment(bytes32,uint256)",
+      "recipientArgumentAccepted": false,
+      "configuredRecipient": "0x183f66622995afD7E16479E48A98b6241858E1ea",
+      "note": "Recipient alteration must be denied by the server policy before invoking this immutable-account method; the server policy path was not exercised."
+    }
+  },
   "supersededDeployment": {
     "flowwTaskAccount": "0x4226435b8B0839DA33584f38c576526830404665",
     "mockUSDC": "0xcaAB919586c44B392e246f8239B064Cd8db3C5d5",
@@ -69,6 +95,7 @@
     "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
     "The task account is deployed from feature/sepolia-task-account commit 22838429243e3cc2e31974f68bc704c1feffe69c; that source commit was later merged to main by PR #3.",
     "The owner has not funded the task account. The executor and fulfillment reporter have Sepolia ETH, but no payment or fulfillment transaction has been submitted.",
-    "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval."
+    "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
+    "The no-broadcast probes are direct contract eth_call simulations, not authenticated backend policy or executor integration tests."
   ]
 }
