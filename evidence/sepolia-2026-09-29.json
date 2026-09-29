@@ -13,51 +13,89 @@
   },
   "contracts": {
     "mockUSDC": {
-      "address": "0xcaAB919586c44B392e246f8239B064Cd8db3C5d5",
+      "address": "0x84B494ff145a545D286321691a9B4Febe6947D6A",
       "symbol": "fUSDC",
       "decimals": 6,
-      "deploymentTransaction": "0xb9eff02ca91fe560f5cdecf79ddad26640c616d2ed39f1d67862927c742455e3",
-      "deploymentBlock": 11807455
+      "deploymentTransaction": "0x0cdbb47413e781fdc5d766cda985953282a6ae14ed03bb936d73db1cc63e48be",
+      "deploymentBlock": 11808003
     },
     "flowwTaskAccount": {
-      "address": "0x4226435b8B0839DA33584f38c576526830404665",
-      "deploymentTransaction": "0x7b849878835032d9767ea79eb42f451cdf5624b2242bbe49df49eccc2281e9e5",
-      "deploymentBlock": 11807458
+      "address": "0xBf3262A36C33ebFdc739caCc14727CD7377Ce79b",
+      "deploymentTransaction": "0x36d338ff842b7f2f753e8f8d7506efa64e299cea9003ccc24caa8f0bebfd0a5f",
+      "deploymentBlock": 11808005
     }
   },
   "transactions": [
     {
       "purpose": "deploy_mock_usdc_fixture",
-      "hash": "0xb9eff02ca91fe560f5cdecf79ddad26640c616d2ed39f1d67862927c742455e3",
+      "hash": "0x0cdbb47413e781fdc5d766cda985953282a6ae14ed03bb936d73db1cc63e48be",
       "status": "0x1",
-      "blockNumber": 11807455
+      "blockNumber": 11808003
     },
     {
       "purpose": "mint_test_tokens_to_deployer",
-      "hash": "0x669407a4d78c9c2a50f0997215c197e5867eb8d63d8ee66bf73107abfccc223b",
+      "hash": "0xb762d5b91a55a644c2711d62a7228975b1783ebecf4f228d972b2283ce3c1dea",
       "status": "0x1",
-      "blockNumber": 11807456
+      "blockNumber": 11808004
     },
     {
       "purpose": "deploy_floww_task_account",
-      "hash": "0x7b849878835032d9767ea79eb42f451cdf5624b2242bbe49df49eccc2281e9e5",
+      "hash": "0x36d338ff842b7f2f753e8f8d7506efa64e299cea9003ccc24caa8f0bebfd0a5f",
       "status": "0x1",
-      "blockNumber": 11807458
+      "blockNumber": 11808005
     }
   ],
   "readOnlyChainChecks": {
     "accountOwner": "0x69fA5c7e0f9f5F50fe2E62eC26b305B421Fa8caa",
-    "accountToken": "0xcaAB919586c44B392e246f8239B064Cd8db3C5d5",
+    "accountExecutor": "0x054883337cA2b9a3DC401eCe980A5F7030cb9366",
+    "accountRecipient": "0x183f66622995afD7E16479E48A98b6241858E1ea",
+    "fulfillmentReporter": "0x183f66622995afD7E16479E48A98b6241858E1ea",
+    "accountToken": "0x84B494ff145a545D286321691a9B4Febe6947D6A",
     "maxSpendBaseUnits": "60000000",
     "deployerMockUSDCBalanceBaseUnits": "100000000",
+    "accountMockUSDCBalanceBaseUnits": "0",
     "accountActive": true,
     "paymentExecuted": false,
     "fulfillmentConfirmed": false
+  },
+  "noBroadcastSimulationProbes": {
+    "method": "eth_call",
+    "transactionSubmitted": false,
+    "results": [
+      {
+        "case": "over_budget",
+        "from": "0x054883337cA2b9a3DC401eCe980A5F7030cb9366",
+        "amountBaseUnits": "60000001",
+        "revert": "InvalidPayment()",
+        "selector": "0x3c6b4b28"
+      },
+      {
+        "case": "unauthorized_executor",
+        "from": "0x1111111111111111111111111111111111111111",
+        "amountBaseUnits": "1000000",
+        "revert": "Unauthorized()",
+        "selector": "0x82b42900"
+      }
+    ],
+    "recipientBinding": {
+      "executeMethod": "executePayment(bytes32,uint256)",
+      "recipientArgumentAccepted": false,
+      "configuredRecipient": "0x183f66622995afD7E16479E48A98b6241858E1ea",
+      "note": "Recipient alteration must be denied by the server policy before invoking this immutable-account method; the server policy path was not exercised."
+    }
+  },
+  "supersededDeployment": {
+    "flowwTaskAccount": "0x4226435b8B0839DA33584f38c576526830404665",
+    "mockUSDC": "0xcaAB919586c44B392e246f8239B064Cd8db3C5d5",
+    "reason": "Replaced because executor, recipient, and fulfillment reporter were placeholder addresses."
   },
   "limitations": [
     "fUSDC is a faucet-enabled demo token with no real value; it is not Circle USDC.",
     "This record proves deployment and queried contract state only; no payment or fulfillment was executed.",
     "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
-    "The task account is deployed from feature/sepolia-task-account commit 22838429243e3cc2e31974f68bc704c1feffe69c; that source commit was later merged to main by PR #3."
+    "The task account is deployed from feature/sepolia-task-account commit 22838429243e3cc2e31974f68bc704c1feffe69c; that source commit was later merged to main by PR #3.",
+    "The owner has not funded the task account. The executor and fulfillment reporter have Sepolia ETH, but no payment or fulfillment transaction has been submitted.",
+    "The deployment review snapshot digest is not evidence of a server-issued or independently verified user approval.",
+    "The no-broadcast probes are direct contract eth_call simulations, not authenticated backend policy or executor integration tests."
   ]
 }
